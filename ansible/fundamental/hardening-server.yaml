@@ -1,0 +1,71 @@
+---
+- name: Hardening Server
+  hosts: all
+  become: true
+  vars:
+    ansible_port: 54321
+  tasks:
+
+    - name: Parsing variable FROM secret file
+      ansible.builtin.include_vars:
+        file: vault.yaml
+
+    - name: Upgrade System
+      ansible.builtin.apt:
+        upgrade: full
+        update_cache: true
+
+    - name: "Install unattended-upgrades (automatic update)"
+      apt:
+        pkg: "unattended-upgrades"
+        state: "present"
+        
+    - name: "Populate 20auto-upgrades apt file"
+      lineinfile:
+        dest: "/etc/apt/apt.conf.d/20auto-upgrades"
+        line: '{{item}}'
+      with_items:
+        - 'APT::Periodic::Update-Package-Lists "1";'
+        - 'APT::Periodic::Unattended-Upgrade "1";'
+
+    - name: "Enable remove unused deps in /etc/apt/apt.conf.d/50unattended-upgrades"
+      lineinfile:
+        dest: "/etc/apt/apt.conf.d/50unattended-upgrades"
+        line: 'Unattended-Upgrade::Remove-Unused-Dependencies "true";'
+        insertafter: '^//Unattended-Upgrade::Remove-Unused-Dependencies'
+
+    # TODO: READ ARTICLE https://dmsimard.com/2016/03/15/changing-the-ssh-port-with-ansible/
+    - name: Setup alternate SSH port
+      lineinfile:
+        dest: "/etc/ssh/sshd_config"
+        regexp: "^Port"
+        line: "Port 54321"
+
+    - name: Disable Password Login
+      lineinfile:
+        dest: /etc/ssh/sshd_config
+        regexp: '^PasswordAuthentication'
+        line: "PasswordAuthentication no"
+        state: present
+        backup: yes
+
+    - name: Disable UsePAM
+      lineinfile:
+        dest: /etc/ssh/sshd_config
+        regexp: '^UsePAM'
+        line: "UsePAM no"
+        state: present
+        backup: yes
+
+    - name: Disable Root Login
+      lineinfile:
+        dest: /etc/ssh/sshd_config
+        regexp: '^PermitRootLogin'
+        line: "PermitRootLogin No"
+        state: present
+        backup: yes
+
+    - name: Restart sshd
+      service:
+        name: sshd
+        state: restarted

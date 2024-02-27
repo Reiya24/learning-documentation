@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: podinfo
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: podinfo
+  template:
+    metadata:
+      name: podinfo
+      labels:
+        app: podinfo
+    spec:
+      containers:
+        - name: podinfo
+          image: stefanprodan/podinfo:latest
+          ports:
+            - containerPort: 9898
+

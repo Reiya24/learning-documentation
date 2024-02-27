@@ -1,0 +1,31 @@
+---
+- name: Init Server
+  hosts: all
+  become: true
+  gather_facts: true #save server information
+  vars:
+    ansible_user: root
+    new_user: reiya
+  tasks:
+
+    - name: Parsing variable FROM secret file
+      ansible.builtin.include_vars:
+        file: vault.yaml
+
+    #https://stackoverflow.com/questions/56869949/ansible-user-module-always-shows-changed
+    - name: Create User {{ new_user }}
+      ansible.builtin.user:
+        name: "{{ new_user }}"
+        password: "{{ user_pass | password_hash('sha512', 'mysalt') }}"
+        shell: /bin/bash
+        groups: sudo
+        state: present
+
+    #https://docs.ansible.com/ansible/latest/collections/ansible/posix/authorized_key_module.html
+    - name: Set up authorized keys
+      ansible.posix.authorized_key:
+        user: "{{ new_user }}"
+        state: present
+        key: '{{ item }}'
+      with_file:
+        - /home/reiya24/.ssh/id_rsa.pub

@@ -1,0 +1,9 @@
+
+**/*.idea
+
+**/*inventory
+**/*vault.yaml
+
+**/*secret.tfvars
+
+**/*.terraform

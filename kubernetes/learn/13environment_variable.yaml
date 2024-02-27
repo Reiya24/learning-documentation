@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apk-nginx
+spec:
+  revisionHistoryLimit: 5
+  replicas: 3
+  selector:
+    matchLabels:
+      app: apk-nginx
+  template:
+    metadata:
+      labels:
+        app: apk-nginx
+    spec:
+      containers:
+        - name: apk-nginx
+          image: nginx:1.22.1
+          resources:
+            limits:
+              memory: "100Mi"
+              cpu:  "10m"
+          ports:
+            - containerPort: 80
+          env:
+            - name: DATABASE_PORT
+              value: "3306"
+            - name: DATABASE_USERNAME
+              value: "reiya24"

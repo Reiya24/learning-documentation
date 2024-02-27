@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apk-nginx
+spec:
+  revisionHistoryLimit: 5
+  replicas: 3
+  selector:
+    matchLabels:
+      app: apk-nginx
+  template:
+    metadata:
+      labels:
+        app: apk-nginx
+    spec:
+      containers:
+        - name: apk-nginx
+          image: nginx:1.22.1
+          resources:
+            limits:
+              memory: "100Mi"
+              cpu:  "10m"
+          ports:
+            - containerPort: 80
+          env:
+            - name: NAME
+              valueFrom:
+                configMapKeyRef:
+                  key: NAME
+                  name: configmap-test
+            - name: PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  key: PASSWORD
+                  name: configmap-test
+          volumeMounts:
+            - name: configmap-test
+              mountPath: "/config"
+              readOnly: true
+
+      volumes:
+        - name: configmap-test
+          configMap:
+            name: configmap-test
+            items:
+              - key: FILE
+                path: FILE
+
+
+
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: configmap-test
+data:
+  NAME: "reiya tenggara"
+  PASSWORD: "wkwk"
+  #file like key
+  FILE: |
+    lorem ipsum
+    dolor sit amet

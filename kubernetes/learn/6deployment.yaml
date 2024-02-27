@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apk-nginx
+spec:
+  replicas: 3
+  revisionHistoryLimit: 5
+  selector:
+    matchLabels:
+      app: apk-nginx
+  template:
+    metadata:
+      labels:
+        app: apk-nginx
+    spec:
+      containers:
+        - name: apk-nginx
+          image: nginx:latest
+          resources:
+            limits:
+              memory: "100Mi"
+              cpu:  "10m"
+          ports:
+            - containerPort: 80

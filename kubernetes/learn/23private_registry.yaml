@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: literature-frontend
+spec:
+  selector:
+    matchLabels:
+      app: literature-frontend
+  template:
+    metadata:
+      labels:
+        app: literature-frontend
+    spec:
+      imagePullSecrets:
+        - name: dockerhub # sesuaikan dengan nama secret yang dibuat
+      containers:
+        - name: literature-frontend
+          image: reiya24/literature-frontend
+          ports:
+            - containerPort: 3000

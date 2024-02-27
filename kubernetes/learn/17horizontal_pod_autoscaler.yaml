@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apk-nginx
+spec:
+  revisionHistoryLimit: 5
+  selector:
+    matchLabels:
+      app: apk-nginx
+  template:
+    metadata:
+      labels:
+        app: apk-nginx
+    spec:
+      containers:
+        - name: apk-nginx
+          image: nginx:1.22.1
+          resources:
+            limits:
+              memory: "100Mi"
+              cpu:  "10m"
+          ports:
+            - containerPort: 80
+
+---
+
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: hpa-apk-nginx
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: apk-nginx
+  minReplicas: 1
+  maxReplicas: 3
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 50
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 60

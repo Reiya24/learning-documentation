@@ -1,0 +1,33 @@
+---
+- name: Install Nginx
+  hosts: all
+  become: true
+  tasks:
+    - name: ensure nginx is at the latest version
+      apt: name=nginx state=latest
+
+    - name: start nginx
+      service:
+        name: nginx
+        state: started
+
+    - name: Copy Nginx template
+      copy:
+        src: ../../nginx/conf.d/include/
+        dest: /etc/nginx/conf.d/include/
+
+    - name: Change file ownership, group and permissions
+      ansible.builtin.file:
+        path: /etc/nginx/conf.d/include/generate_cloudflare_ips.sh
+        owner: root
+        group: root
+        mode: '744'
+
+    - name: Create Crontabjob to generate ip's from cloudflare
+      ansible.builtin.cron:
+        name: "generate cloudflare ip"
+        special_time: "weekly"
+        job: "/etc/nginx/conf.d/include/generate_cloudflare_ips.sh > /dev/null"
+      become: true
+      become_user: root
+
